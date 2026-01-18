@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision AI - Hospitalar Saúde</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: #1a1a2e;
+            border-bottom: 1px solid #333;
+            gap: 10px;
+        }
+        
+        .logo {
+            font-weight: bold;
+            color: #4a9eff;
+            font-size: 18px;
+        }
+        
+        .btn-canais {
+            background: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .url-input {
+            flex: 1;
+            background: #2a2a3e;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .btn-go {
+            background: #333;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-dev {
+            background: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-prod {
+            background: #333;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-dev.active, .btn-prod.active {
+            background: #f59e0b;
+            color: #000;
+        }
+        
+        /* Iframe Container */
+        .iframe-container {
+            flex: 1;
+            background: #111;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Chat Sidebar */
+        .chat-sidebar {
+            width: 320px;
+            background: #1a1a2e;
+            border-left: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .chat-header h2 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        
+        .chat-header p {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 16px;
+        }
+        
+        .message.assistant {
+            color: #ccc;
+        }
+        
+        .message.user {
+            color: #4a9eff;
+            text-align: right;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+        }
+        
+        .welcome-message h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #888;
+        }
+        
+        .chat-input-container {
+            padding: 16px;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            background: #2a2a3e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            resize: none;
+        }
+        
+        .btn-send {
+            background: #4a9eff;
+            color: #fff;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-send:hover {
+            background: #3a8eef;
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            <div class="top-bar">
+                <span class="logo">Vision AI</span>
+                <button class="btn-canais">Canais</button>
+                <input type="text" class="url-input" id="urlInput" value="https://dev.hospitalarsaude.app.br/#/dashboard/home" placeholder="Digite a URL...">
+                <button class="btn-go" onclick="navigateTo()">Ir</button>
+                <button class="btn-dev active" id="btnDev" onclick="switchEnv('dev')">DEV</button>
+                <button class="btn-prod" id="btnProd" onclick="switchEnv('prod')">PROD</button>
+            </div>
+            <div class="iframe-container">
+                <iframe id="mainFrame" src="https://dev.hospitalarsaude.app.br/#/dashboard/home"></iframe>
+            </div>
+        </div>
+        
+        <div class="chat-sidebar">
+            <div class="chat-header">
+                <h2>Assistente Hospitalar</h2>
+                <p>Especializado no sistema</p>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <h3>Olá! Como posso ajudar?</h3>
+                    <p>Pergunte sobre o sistema Hospitalar Saúde</p>
+                </div>
+            </div>
+            <div class="loading" id="loading">
+                <p>Pensando...</p>
+            </div>
+            <div class="chat-input-container">
+                <textarea class="chat-input" id="chatInput" placeholder="Pergunte sobre o sistema..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+                <button class="btn-send" onclick="sendMessage()">▶</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const DEV_URL = 'https://dev.hospitalarsaude.app.br/#/dashboard/home';
+        const PROD_URL = 'https://hospitalarsaude.app.br/#/dashboard/home';
+        
+        function navigateTo() {
+            const url = document.getElementById('urlInput').value;
+            document.getElementById('mainFrame').src = url;
+        }
+        
+        function switchEnv(env) {
+            const btnDev = document.getElementById('btnDev');
+            const btnProd = document.getElementById('btnProd');
+            const urlInput = document.getElementById('urlInput');
+            const frame = document.getElementById('mainFrame');
+            
+            if (env === 'dev') {
+                btnDev.classList.add('active');
+                btnProd.classList.remove('active');
+                urlInput.value = DEV_URL;
+                frame.src = DEV_URL;
+            } else {
+                btnProd.classList.add('active');
+                btnDev.classList.remove('active');
+                urlInput.value = PROD_URL;
+                frame.src = PROD_URL;
+            }
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+            
+            // Add user message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user';
+            userDiv.textContent = message;
+            messagesContainer.appendChild(userDiv);
+            
+            input.value = '';
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            
+            try {
+                // Call OpenAI API via serverless function
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                // Add assistant message
+                const assistantDiv = document.createElement('div');
+                assistantDiv.className = 'message assistant';
+                assistantDiv.textContent = data.response || data.error || 'Erro ao processar mensagem';
+                messagesContainer.appendChild(assistantDiv);
+                
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message assistant';
+                errorDiv.textContent = 'Erro de conexão. Tente novamente.';
+                messagesContainer.appendChild(errorDiv);
+            }
+            
+            // Hide loading
+            document.getElementById('loading').classList.remove('active');
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
